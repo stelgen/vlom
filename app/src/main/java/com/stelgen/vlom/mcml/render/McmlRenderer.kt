@@ -28,16 +28,36 @@ class McmlRenderer(
 
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
 
-    fun draw(root: RenderNode, canvas: Canvas, screenWidth: Int, screenHeight: Int) {
+    /** Глобальная альфа перехода страницы (0..255), применяется ко всем узлам. */
+    private var alphaScale = 255
+
+    /**
+     * S1.3/S1.4: focusedId — подсветка фокусного узла;
+     * transition — состояние кадра перехода страницы (слайд+fade).
+     */
+    fun draw(
+        root: RenderNode,
+        canvas: Canvas,
+        screenWidth: Int,
+        screenHeight: Int,
+        focusedId: String? = null,
+        transition: com.stelgen.vlom.mcml.anim.PageTransition.Frame? = null,
+    ) {
         val factor = scale.factor(screenWidth, screenHeight)
         val dx = scale.offsetX(screenWidth, factor).toFloat()
         val dy = scale.offsetY(screenHeight, factor).toFloat()
 
         drawBackdrop(canvas, screenWidth, screenHeight)
         canvas.save()
+        if (transition != null) {
+            canvas.translate(transition.offset * scale.basisWidth * factor, 0f)
+            alphaScale = (transition.alpha.coerceIn(0f, 1f) * 255f).toInt()
+        } else {
+            alphaScale = 255
+        }
         canvas.translate(dx, dy)
         canvas.scale(factor, factor)
-        drawNode(root, canvas, 0, 0)
+        drawNode(root, canvas, 0, 0, focusedId)
         canvas.restore()
     }
 
@@ -50,18 +70,32 @@ class McmlRenderer(
         paint.shader = null
     }
 
-    private fun drawNode(node: RenderNode, canvas: Canvas, parentX: Int, parentY: Int) {
+    private fun drawNode(node: RenderNode, canvas: Canvas, parentX: Int, parentY: Int, focusedId: String?) {
         val g = node.geometry
         val x = parentX + (g.left ?: 0)
         val y = parentY + (g.top ?: 0)
         val w = g.width
         val h = g.height
 
+        val isFocused = focusedId != null && node.id == focusedId
         if (w != null && h != null) {
             paint.style = Paint.Style.FILL
             paint.color = panelColor(node)
-            paint.alpha = if (node is RenderNode.Panel) 40 else 70
+            paint.alpha = when {
+                isFocused -> 120
+                node is RenderNode.Panel -> 40
+                else -> 70
+            } * alphaScale / 255
             canvas.drawRect(x.toFloat(), y.toFloat(), (x + w).toFloat(), (y + h).toFloat(), paint)
+            if (isFocused) {
+                // рамка фокуса (visual state; точный скин — фаза 4)
+                paint.style = Paint.Style.STROKE
+                paint.strokeWidth = 3f
+                paint.color = 0xFFFFFFFF.toInt()
+                paint.alpha = alphaScale
+                canvas.drawRect(x.toFloat(), y.toFloat(), (x + w).toFloat(), (y + h).toFloat(), paint)
+                paint.style = Paint.Style.FILL
+            }
         }
 
         when (node) {
@@ -70,7 +104,7 @@ class McmlRenderer(
             else -> {} // Panel/Image: до декодирования PNG-ресурсов (фаза 4)
         }
 
-        node.children.forEach { drawNode(it, canvas, x, y) }
+        node.children.forEach { drawNode(it, canvas, x, y, focusedId) }
     }
 
     private fun drawText(node: RenderNode.Text, canvas: Canvas, x: Int, y: Int, w: Int?) {
