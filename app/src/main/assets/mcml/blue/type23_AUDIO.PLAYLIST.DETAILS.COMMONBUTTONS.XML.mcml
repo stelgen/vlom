@@ -1,0 +1,1 @@
+<?xml version="1.0" encoding="UTF-8" ?><uidescription platform="Television" xmlns:sb="http://schemas.microsoft.com/MediaCenter/ehshell/ServiceBus.UIFramework"><sb:Button class="Button.Audio" onClick="PlayNow_OnClick" id="_playNowButton">#Audio.PlayNow</sb:Button></uidescription>

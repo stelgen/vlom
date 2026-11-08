@@ -1,0 +1,1 @@
+<Mcml xmlns="http://schemas.microsoft.com/2006/mcml" xmlns:movies="assembly://ehshell/MediaCenter.Movies" xmlns:base ="res://ehres!SlideDeck.Details.mcml" xmlns:me ="Me"><UI Name="SlideDeck_Movie_Details" BaseUI="base:SlideDeck_Details_Overlay"><Properties><movies:ShowingsSlideDeck Name="SlideDeck" ShowingsSlideDeck="$Required" /></Properties></UI></Mcml>

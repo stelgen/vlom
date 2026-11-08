@@ -41,4 +41,6 @@ android {
 dependencies {
     // Тесты с первого дня (профессиональный канон: фича без теста = незаконченная фича)
     testImplementation("junit:junit:4.13.2")
+    // org.json на JVM (unit-тесты McmlJson); на Android — встроенная реализация
+    testImplementation("org.json:json:20240303")
 }

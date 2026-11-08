@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<styles>
+
+    <style class="ListItem.Audio.SearchType"
+        width="140"
+        />
+
+    <style class="Panel.Video.InfoBarText.Channel.Callsign"
+        fontStyle="FS24"
+        />
+
+</styles>
+

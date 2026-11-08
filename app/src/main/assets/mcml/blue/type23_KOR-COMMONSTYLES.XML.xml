@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<styles>
+
+    <style class="Panel.BlueText.VideoListItemDateTime"
+        width="120"
+        />
+
+    <style class="Panel.HomeLabel"
+        fontStyle="FS46"
+        />
+
+    <style class="Panel.Video.InfoBarText.Channel.Callsign"
+        fontStyle="FS24"
+        />
+
+</styles>
+
