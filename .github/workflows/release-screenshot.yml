@@ -76,7 +76,7 @@ jobs:
             # дождаться resumed-активности
             for i in $(seq 1 20); do
               R=$(adb shell dumpsys activity activities 2>/dev/null | grep -c 'com.stelgen.vlom/.MainActivity') || true
-              [ "$R" -gt 0 ] && break
+              if [ "$R" -gt 0 ]; then break; fi
               sleep 2
             done
             adb shell settings put global window_animation_scale 0
