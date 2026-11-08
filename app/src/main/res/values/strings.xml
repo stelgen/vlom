@@ -6,4 +6,34 @@
     <string name="settings_add_app">Добавить приложение</string>
     <string name="settings_done">Готово</string>
     <string name="settings_theme">Тема: %1$s (нажмите для смены)</string>
+
+    <string name="recovery_title">VLOM: режим восстановления</string>
+    <string name="recovery_message">Лаунчер завершался с ошибкой несколько раз подряд.\nВыберите действие:</string>
+    <string name="recovery_stock">Открыть стоковый лаунчер</string>
+    <string name="recovery_reset">Сбросить настройки VLOM</string>
+    <string name="recovery_continue">Продолжить в VLOM</string>
+    <string name="recovery_no_stock">Стоковый лаунчер не найден</string>
+    <string name="recovery_reset_done">Настройки сброшены</string>
+
+    <string name="weather_title">Погода</string>
+    <string name="weather_offline">Нет соединения с Open-Meteo</string>
+    <string name="weather_no_city">Город не определён</string>
+    <string name="weather_current_fmt">%1$s°  %2$s</string>
+    <string name="weather_days_fmt">5 дней: %1$s</string>
+    <string name="weather_change_city">Сменить город</string>
+    <string name="weather_city_hint">Название города</string>
+    <string name="weather_dialog_title">Город</string>
+
+    <string name="frigate_title">Наблюдение (Frigate)</string>
+    <string name="frigate_hint">Укажите адрес веб-морды Frigate\n(например http://192.168.1.10:5000)</string>
+    <string name="frigate_url_hint">http://</string>
+    <string name="frigate_open">Открыть</string>
+    <string name="frigate_no_url">Нет адреса сайта</string>
+
+    <string name="add_site">+ Добавить сайт</string>
+    <string name="add_site_title">Адрес сайта</string>
+    <string name="site_url_hint">https://example.com</string>
+
+    <string name="btn_ok">OK</string>
+    <string name="btn_cancel">Отмена</string>
 </resources>

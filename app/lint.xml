@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Приложение строго для Android TV (REQ-001 P4): фиксированный landscape —
+     осознанное решение, не ограничение совместимости. -->
+<lint>
+    <issue id="DiscouragedApi" severity="ignore" />
+</lint>

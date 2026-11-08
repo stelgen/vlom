@@ -9,6 +9,7 @@ import android.widget.BaseAdapter
 import android.widget.LinearLayout
 import android.widget.ListView
 import android.widget.TextView
+import com.stelgen.vlom.R
 import com.stelgen.vlom.shell.AppRepository
 import com.stelgen.vlom.shell.SharedPreferencesTileStore
 import com.stelgen.vlom.shell.TileRepository
@@ -42,7 +43,7 @@ class AddAppActivity : Activity() {
         root.addView(title)
 
         val addSite = TextView(this).apply {
-            text = "+ Добавить сайт"
+            text = getString(R.string.add_site)
             textSize = 22f
             setTextColor(0xFF5B8FD9.toInt())
             typeface = FontLoader.get(context, FontLoader.Style.SEMIBOLD)
@@ -87,10 +88,10 @@ class AddAppActivity : Activity() {
     /** S3.3: веб-тайтл — произвольный сайт. */
     private fun promptSite() {
         val input = android.widget.EditText(this).apply {
-            hint = "https://example.com"
+            hint = getString(R.string.site_url_hint)
             setSingleLine(true)
         }
-        AlertDialogs.confirm(this, "Адрес сайта", input) {
+        AlertDialogs.confirm(this, getString(R.string.add_site_title), input) {
             val raw = input.text.toString().trim()
             val url = com.stelgen.vlom.ui.FrigateActivity.normalizeUrl(raw)
             if (url != null) {

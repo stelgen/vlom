@@ -25,6 +25,9 @@ class McmlView(
     private val isFocusableRoot: Boolean = true,
 ) : View(context) {
 
+    @Suppress("unused")
+    constructor(context: Context, attrs: android.util.AttributeSet?) : this(context, "type23_ASPECTPANEL.XML.mcml")
+
     private var root: RenderNode? = null
     private var focusModel: FocusModel? = null
     private val renderer = McmlRenderer(DesignScale())

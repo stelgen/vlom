@@ -9,6 +9,7 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.LinearLayout
 import android.widget.Toast
+import com.stelgen.vlom.R
 
 /**
  * S3.3 (B1-B4): веб-тайтл — произвольный сайт во встроенном браузере.
@@ -27,7 +28,7 @@ class WebActivity : Activity() {
         val url = intent.getStringExtra(EXTRA_URL)
 
         if (url.isNullOrBlank()) {
-            Toast.makeText(this, "Нет адреса сайта", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.frigate_no_url), Toast.LENGTH_SHORT).show()
             finish()
             return
         }
@@ -53,6 +54,8 @@ class WebActivity : Activity() {
         setContentView(root)
     }
 
+    @Deprecated("Deprecated in Java")
+    @Suppress("DEPRECATION")
     override fun onBackPressed() {
         val wv = webView
         if (wv != null && wv.canGoBack()) wv.goBack() else super.onBackPressed()

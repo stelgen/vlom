@@ -11,6 +11,7 @@ import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.EditText
+import com.stelgen.vlom.R
 import com.stelgen.vlom.weather.GeoPlace
 import com.stelgen.vlom.weather.WeatherApi
 import com.stelgen.vlom.weather.WeatherSnapshot
@@ -44,7 +45,7 @@ class WeatherActivity : Activity() {
             setPadding(px(64), px(48), px(64), px(48))
         }
         val header = TextView(this).apply {
-            text = "Погода"
+            text = getString(R.string.weather_title)
             textSize = 40f
             setTextColor(0xFFFFFFFF.toInt())
             typeface = FontLoader.get(this@WeatherActivity, FontLoader.Style.SEMIBOLD)
@@ -76,7 +77,7 @@ class WeatherActivity : Activity() {
         root.addView(daily)
 
         val changeBtn = Button(this).apply {
-            text = "Сменить город"
+            text = getString(R.string.weather_change_city)
             textSize = 20f
             setOnClickListener { promptCity() }
         }
@@ -102,13 +103,13 @@ class WeatherActivity : Activity() {
                 val snapshot = resolved?.let { WeatherApi.forecast(it) }
                 runOnUiThread {
                     status.text = resolved?.let { "${it.name}, ${it.country}".trimEnd(',', ' ') }
-                        ?: "Город не определён"
+                        ?: getString(R.string.weather_no_city)
                     render(snapshot)
                 }
             } catch (e: Exception) {
                 runOnUiThread {
-                    status.text = "Нет соединения с Open-Meteo"
-                    current.text = "—"
+                    status.text = getString(R.string.weather_offline)
+                    current.text = "—".let { it }
                     daily.text = ""
                 }
             }
@@ -117,25 +118,32 @@ class WeatherActivity : Activity() {
 
     private fun render(snapshot: WeatherSnapshot?) {
         if (snapshot == null) {
-            current.text = "—"
+            current.text = "—".let { it }
             daily.text = ""
             return
         }
-        current.text = "${snapshot.temperatureC.toInt()}°  ${snapshot.description()}"
+        current.text = getString(
+            R.string.weather_current_fmt,
+            snapshot.temperatureC.toInt().toString(),
+            snapshot.description(),
+        )
         val min = snapshot.dailyMinC.take(5).map { it.toInt() }
         val max = snapshot.dailyMaxC.take(5).map { it.toInt() }
         daily.text = if (min.size == max.size && min.isNotEmpty()) {
-            "5 дней: " + min.zip(max).joinToString("  ") { "${it.second}° / ${it.first}°" }
+            getString(
+                R.string.weather_days_fmt,
+                min.zip(max).joinToString("  ") { "${it.second}° / ${it.first}°" },
+            )
         } else ""
     }
 
     private fun promptCity() {
         val input = EditText(this).apply {
-            hint = "Название города"
+            hint = getString(R.string.weather_city_hint)
             setSingleLine(true)
         }
         AlertDialogs.confirm(
-            this, "Город", input
+            this, getString(R.string.weather_dialog_title), input
         ) {
             val city = input.text.toString().trim()
             if (city.isNotEmpty()) {
@@ -159,8 +167,8 @@ object AlertDialogs {
         android.app.AlertDialog.Builder(activity)
             .setTitle(title)
             .setView(view)
-            .setPositiveButton("OK") { _, _ -> onOk() }
-            .setNegativeButton("Отмена", null)
+            .setPositiveButton(R.string.btn_ok) { _, _ -> onOk() }
+            .setNegativeButton(R.string.btn_cancel, null)
             .show()
     }
 }

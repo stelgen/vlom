@@ -14,16 +14,24 @@ import android.view.View
 internal class StubView(context: Context) : View(context) {
 
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+    private var backdrop: LinearGradient? = null
+
+    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+        super.onSizeChanged(w, h, oldw, oldh)
+        // S5.1: предвычисляем вне onDraw (lint DrawAllocation)
+        backdrop = LinearGradient(
+            0f, 0f, 0f, h.toFloat(),
+            0xFF0B3D91.toInt(), 0xFF06142E.toInt(), Shader.TileMode.CLAMP
+        )
+    }
 
     override fun onDraw(canvas: Canvas) {
         val w = width.toFloat()
         val h = height.toFloat()
 
-        paint.shader = LinearGradient(
-            0f, 0f, 0f, h,
-            0xFF0B3D91.toInt(), 0xFF06142E.toInt(), Shader.TileMode.CLAMP
-        )
+        paint.shader = backdrop
         canvas.drawRect(0f, 0f, w, h, paint)
+        paint.shader = null
 
         paint.shader = null
         paint.color = 0xFFFFFFFF.toInt()

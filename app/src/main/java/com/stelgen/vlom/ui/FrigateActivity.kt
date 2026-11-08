@@ -11,6 +11,7 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.LinearLayout
 import android.widget.TextView
+import com.stelgen.vlom.R
 
 /**
  * S3.2 (B4): веб-морда Frigate во встроенном браузере — полное управление.
@@ -66,24 +67,24 @@ class FrigateActivity : Activity() {
             setPadding(px(64), px(48), px(64), px(48))
         }
         val title = TextView(this).apply {
-            text = "Наблюдение (Frigate)"
+            text = getString(R.string.frigate_title)
             textSize = 36f
             setTextColor(0xFFFFFFFF.toInt())
             typeface = FontLoader.get(this@FrigateActivity, FontLoader.Style.SEMIBOLD)
         }
         val hintText = TextView(this).apply {
-            text = "Укажите адрес веб-морды Frigate\n(например http://192.168.1.10:5000)"
+            text = getString(R.string.frigate_hint)
             textSize = 22f
             setTextColor(0xFF9DB6D6.toInt())
             typeface = FontLoader.get(this@FrigateActivity)
             setPadding(0, px(24), 0, px(24))
         }
         val input = android.widget.EditText(this).apply {
-            hint = "http://"
+            hint = getString(R.string.frigate_url_hint)
             setSingleLine(true)
         }
         val go = android.widget.Button(this).apply {
-            text = "Открыть"
+            text = getString(R.string.frigate_open)
             textSize = 20f
             setOnClickListener {
                 val u = normalizeUrl(input.text.toString())
@@ -100,6 +101,8 @@ class FrigateActivity : Activity() {
         return root
     }
 
+    @Deprecated("Deprecated in Java")
+    @Suppress("DEPRECATION")
     override fun onBackPressed() {
         val wv = webView
         if (wv != null && wv.canGoBack()) wv.goBack() else super.onBackPressed()

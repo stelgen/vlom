@@ -34,6 +34,12 @@ class HomeView(
     private val onTileActivated: (HomeTile) -> Unit = {},
 ) : View(context) {
 
+    @Suppress("unused")
+    constructor(context: Context, attrs: android.util.AttributeSet?) : this(context)
+
+    @Suppress("unused")
+    constructor(context: Context) : this(context, com.stelgen.vlom.shell.TileSettings())
+
     private val visible: List<HomeTile> = settings.visible
     private var focusedIndex: Int = 0
 
@@ -47,6 +53,8 @@ class HomeView(
     private var entryLayerId = 0
     private val icons = TileIconProvider(context)
     private val skins = SkinBitmaps(context)
+    private val bgRect = RectF()
+    private val tileRect = RectF()
     private val scale = DesignScale()
     private val palette = ThemeManager.palette(context)
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
@@ -126,6 +134,9 @@ class HomeView(
         invalidate()
     }
 
+    // Анимация полосы: пересборка placements каждый кадр (маленький список,-count<20).
+    // Кэширование отложено до профилирования (S5.1 на устройстве).
+    @android.annotation.SuppressLint("DrawAllocation")
     override fun onDraw(canvas: Canvas) {
         val w = width
         val h = height
@@ -142,8 +153,8 @@ class HomeView(
         paint.shader = null
         // S4.1: оригинальный фон ehres (COMMON.BACKGROUND) поверх палитры
         skins.get(SkinCatalog.homeBackground)?.let { bg ->
-            val dest = android.graphics.RectF(0f, 0f, w.toFloat(), h.toFloat())
-            canvas.drawBitmap(bg, null, dest, paint)
+            bgRect.set(0f, 0f, w.toFloat(), h.toFloat())
+            canvas.drawBitmap(bg, null, bgRect, paint)
         }
 
         canvas.save()
@@ -188,7 +199,8 @@ class HomeView(
     }
 
     private fun drawTile(canvas: Canvas, tile: HomeTile, p: HomeLayout.Placement, focused: Boolean) {
-        val rect = RectF(p.x, p.y, p.x + p.width, p.y + p.height)
+        val rect = tileRect
+        rect.set(p.x, p.y, p.x + p.width, p.y + p.height)
         val skin = SkinCatalog.forTile(tile)
 
         if (focused) {

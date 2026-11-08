@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
+import com.stelgen.vlom.R
 import com.stelgen.vlom.shell.CrashGuard
 import com.stelgen.vlom.shell.CrashGuardInstaller
 
@@ -32,30 +33,30 @@ class RecoveryActivity : Activity() {
         }
 
         root.addView(TextView(this).apply {
-            text = "VLOM: режим восстановления"
+            text = getString(R.string.recovery_title)
             textSize = 28f
             setTextColor(0xFFFFFFFF.toInt())
             setPadding(0, 0, 0, px(16))
         })
         root.addView(TextView(this).apply {
-            text = "Лаунчер завершался с ошибкой несколько раз подряд.\nВыберите действие:"
+            text = getString(R.string.recovery_message)
             textSize = 18f
             setTextColor(0xFFBBBBBB.toInt())
             setPadding(0, 0, 0, px(32))
         })
 
         root.addView(Button(this).apply {
-            text = "Открыть стоковый лаунчер"
+            text = getString(R.string.recovery_stock)
             setOnClickListener { launchStockLauncher() }
         }, LinearLayout.LayoutParams(WRAP, WRAP).apply { bottomMargin = px(16) })
 
         root.addView(Button(this).apply {
-            text = "Сбросить настройки VLOM"
+            text = getString(R.string.recovery_reset)
             setOnClickListener { resetSettings() }
         }, LinearLayout.LayoutParams(WRAP, WRAP).apply { bottomMargin = px(16) })
 
         root.addView(Button(this).apply {
-            text = "Продолжить в VLOM"
+            text = getString(R.string.recovery_continue)
             setOnClickListener {
                 CrashGuardInstaller.guard(this@RecoveryActivity).exitRecovery()
                 finish()
@@ -79,7 +80,7 @@ class RecoveryActivity : Activity() {
             CrashGuardInstaller.guard(this).exitRecovery()
             finish()
         } else {
-            android.widget.Toast.makeText(this, "Стоковый лаунчер не найден", android.widget.Toast.LENGTH_LONG).show()
+            android.widget.Toast.makeText(this, getString(R.string.recovery_no_stock), android.widget.Toast.LENGTH_LONG).show()
         }
     }
 
@@ -89,7 +90,7 @@ class RecoveryActivity : Activity() {
         getSharedPreferences("vlom_weather", MODE_PRIVATE).edit().clear().apply()
         getSharedPreferences("vlom_frigate", MODE_PRIVATE).edit().clear().apply()
         getSharedPreferences("vlom_guard", MODE_PRIVATE).edit().clear().apply()
-        android.widget.Toast.makeText(this, "Настройки сброшены", android.widget.Toast.LENGTH_SHORT).show()
+        android.widget.Toast.makeText(this, getString(R.string.recovery_reset_done), android.widget.Toast.LENGTH_SHORT).show()
         CrashGuardInstaller.guard(this).exitRecovery()
     }
 

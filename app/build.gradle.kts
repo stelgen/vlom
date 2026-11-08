@@ -5,17 +5,17 @@ plugins {
 
 android {
     namespace = "com.stelgen.vlom"
-    compileSdk = 34
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.stelgen.vlom"
         minSdk = 28          // Android 9.0 (REQ-001 P2)
-        targetSdk = 34
+        targetSdk = 36
         versionCode = 2
         versionName = "0.2.0"
         // REQ-001 P3: universal APK = arm32 + arm64 в одном APK
         ndk {
-            abiFilters += listOf("armeabi-v7a", "arm64-v8a")
+            abiFilters += listOf("armeabi-v7a", "arm64-v8a", "x86_64")
         }
     }
 
