@@ -34,22 +34,28 @@ object HomeLayout {
     )
 
     /**
-     * Раскладка видимых тайтлов вокруг фокусного.
-     * Центры ячеек идут с постоянным шагом (TILE_W+GAP); визуальная позиция =
-     * центр ячейки минус половина масштабированной ширины тайла.
+     * Раскладка видимых тайтлов вокруг фокусного (int = дискретный вариант).
      */
-    fun stripe(count: Int, focusedIndex: Int): List<Placement> {
+    fun stripe(count: Int, focusedIndex: Int): List<Placement> =
+        stripe(count, focusedIndex.toFloat())
+
+    /**
+     * Раскладка с ПЛАВНЫМ фокусом (S4.2, U4): fractional focus даёт непрерывное
+     * скольжение полосы при смене тайтла (анимация 180мс в HomeView).
+     * Центры ячеек идут с постоянным шагом; масштаб — интерполяция
+     * FOCUS_SCALE (|rel|=0) -> NEIGHBOUR_SCALE (|rel|=1) -> *0.95 дальше.
+     */
+    fun stripe(count: Int, focused: Float): List<Placement> {
         require(count >= 0) { "count must be non-negative" }
-        val fi = focusedIndex.coerceIn(0, (count - 1).coerceAtLeast(0))
+        val fi = focused.coerceIn(0f, (count - 1).coerceAtLeast(0).toFloat())
 
         val pitch = TILE_W + GAP
         val shift = BASIS_W / 2f - TILE_W / 2f - fi * pitch
 
         return (0 until count).map { i ->
-            val rel = i - fi
+            val rel = abs(i - fi)
             val scale = when {
-                rel == 0 -> FOCUS_SCALE
-                abs(rel) == 1 -> NEIGHBOUR_SCALE
+                rel <= 1f -> FOCUS_SCALE + (NEIGHBOUR_SCALE - FOCUS_SCALE) * rel
                 else -> NEIGHBOUR_SCALE * 0.95f
             }
             val w = TILE_W * scale

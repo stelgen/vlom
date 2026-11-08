@@ -16,19 +16,21 @@ import com.stelgen.vlom.R
 import com.stelgen.vlom.shell.AppRepository
 import com.stelgen.vlom.shell.BuiltInTiles
 import com.stelgen.vlom.shell.HomeTile
+import com.stelgen.vlom.shell.SharedPreferencesTileStore
+import com.stelgen.vlom.shell.ThemeManager
 import com.stelgen.vlom.shell.TileIconProvider
 import com.stelgen.vlom.shell.TileRepository
-import com.stelgen.vlom.shell.SharedPreferencesTileStore
+import com.stelgen.vlom.shell.TileSettings
 
 /**
  * S2.4 / S2.2: настройки v1 в стиле MCE — управление тайтлами:
- * скрытие/показ, пересортировка (вверх/вниз), добавление приложений.
- * D-pad: UP/DOWN — выбор строки, OK — действия над тайтлом.
+ * скрытие/показ, пересортировка (вверх/вниз), добавление приложений,
+ * выбор темы (S4.3). D-pad: UP/DOWN — выбор строки, OK — действия.
  */
 class SettingsActivity : Activity() {
 
     private lateinit var store: SharedPreferencesTileStore
-    private lateinit var settings: com.stelgen.vlom.shell.TileSettings
+    private lateinit var settings: TileSettings
     private lateinit var adapter: TileAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -38,9 +40,11 @@ class SettingsActivity : Activity() {
         val apps = AppRepository(this).launchableApps()
         settings = TileRepository.load(store, apps.map { it.packageName }.toSet())
 
+        val themeBg = ThemeManager.palette(this).backgroundBottom
+
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setBackgroundColor(0xFF06142E.toInt())
+            setBackgroundColor(themeBg)
             setPadding(px(48), px(36), px(48), px(36))
         }
 
@@ -59,6 +63,20 @@ class SettingsActivity : Activity() {
             setOnClickListener { startActivity(Intent(this@SettingsActivity, AddAppActivity::class.java)) }
         }
         root.addView(addBtn)
+
+        // S4.3: выбор темы Blue/Black/Green
+        val themeBtn = Button(this).apply {
+            text = getString(R.string.settings_theme, ThemeManager.current(context).label)
+            textSize = 20f
+            setOnClickListener {
+                val list = ThemeManager.Theme.entries
+                val next = list[(list.indexOf(ThemeManager.current(context)) + 1) % list.size]
+                ThemeManager.set(context, next)
+                text = getString(R.string.settings_theme, next.label)
+                root.setBackgroundColor(ThemeManager.palette(context).backgroundBottom)
+            }
+        }
+        root.addView(themeBtn)
 
         val listView = ListView(this).apply {
             adapter = TileAdapter().also { adapter = it }
@@ -102,7 +120,8 @@ class SettingsActivity : Activity() {
             row.text = buildString {
                 append(tile.label)
                 if (tile.hidden) append("  · скрыт")
-                if (!tile.builtIn) append("  · приложение")
+                if (tile.isAppTile) append("  · приложение")
+                if (tile.isWebTile) append("  · сайт")
             }
             row.setTextColor(if (tile.hidden) 0xFF8899AA.toInt() else 0xFFFFFFFF.toInt())
             row.setOnClickListener { showActions(position) }
