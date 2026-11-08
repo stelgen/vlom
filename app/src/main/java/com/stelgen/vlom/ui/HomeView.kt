@@ -12,6 +12,7 @@ import com.stelgen.vlom.mcml.render.DesignScale
 import com.stelgen.vlom.shell.AppRepository
 import com.stelgen.vlom.shell.HomeLayout
 import com.stelgen.vlom.shell.HomeTile
+import com.stelgen.vlom.shell.TileIconProvider
 import com.stelgen.vlom.shell.TileSettings
 import com.stelgen.vlom.sound.SoundEngine
 import com.stelgen.vlom.sound.SoundMap
@@ -30,6 +31,7 @@ class HomeView(
     private val visible: List<HomeTile> = settings.visible
     private var focusedIndex: Int = 0
     private val placements = HomeLayout.stripe(visible.size, focusedIndex)
+    private val icons = TileIconProvider(context)
 
     private val scale = DesignScale()
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
@@ -81,12 +83,20 @@ class HomeView(
 
     private fun activate(tile: HomeTile) {
         sounds.play(SoundMap.UiEvent.BUTTON_CLICK)
-        if (tile.isLaunchable) {
-            if (!apps.launch(tile)) {
-                Log.w(TAG, "app launch failed: ${tile.id}")
+        when {
+            tile.isWebTile -> {
+                // S3.3: веб-тайтл — встроенный браузер
+                context.startActivity(
+                    android.content.Intent(context, WebActivity::class.java)
+                        .putExtra(WebActivity.EXTRA_URL, tile.webUrl)
+                )
             }
-        } else {
-            onTileActivated(tile) // встроенный тайтл: внутренний экран (фаза 2/3)
+            tile.isAppTile -> {
+                if (!apps.launch(tile)) {
+                    Log.w(TAG, "app launch failed: ${tile.id}")
+                }
+            }
+            else -> onTileActivated(tile) // встроенный тайтл: внутренний экран
         }
         invalidate()
     }
@@ -145,6 +155,19 @@ class HomeView(
         paint.textAlign = Paint.Align.CENTER
         val cy = p.y + p.height - 26f
         canvas.drawText(tile.label, rect.centerX(), cy, paint)
+
+        // автоиконка (S2.2): APK-иконка или оригинальный PNG темы для builtIn
+        icons.iconFor(tile)?.let { drawable ->
+            val size = if (focused) 110f else 92f
+            val cx = rect.centerX()
+            val top = p.y + (p.height - size) / 2f - 22f
+            drawable.setBounds(
+                (cx - size / 2f).toInt(), top.toInt(),
+                (cx + size / 2f).toInt(), (top + size).toInt(),
+            )
+            drawable.alpha = if (tile.hidden) 150 else 255
+            drawable.draw(canvas)
+        }
     }
 
     companion object {

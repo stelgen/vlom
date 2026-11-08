@@ -52,7 +52,7 @@ class ShellTest {
     @Test
     fun `defaults are the original Vista MCE titles`() {
         assertEquals(
-            listOf("Музыка", "Картинки", "Видео", "Наблюдение", "Настройки"),
+            listOf("Музыка", "Картинки", "Видео", "Наблюдение", "Погода", "Настройки"),
             base.tiles.map { it.label },
         )
         assertTrue(base.visible.all { !it.hidden })
@@ -61,9 +61,9 @@ class ShellTest {
     @Test
     fun `addApp deduplicates by package and activity`() {
         val s = base.addApp("wink", "Wink", "com.winktv", null)
-        assertEquals(6, s.tiles.size)
+        assertEquals(7, s.tiles.size)
         val again = s.addApp("wink2", "Wink", "com.winktv", null)
-        assertEquals(6, again.tiles.size)
+        assertEquals(7, again.tiles.size)
     }
 
     @Test
@@ -98,6 +98,7 @@ class ShellTest {
     @Test
     fun `codec roundtrip preserves settings`() {
         val s = base.addApp("wink", "Wink", "com.winktv", "com.winktv.MainActivity")
+            .addWebsite("web.jf", "Jellyfin", "http://192.168.1.10:8096")
             .setHidden(BuiltInTiles.VIDEO, true)
             .move(0, 2)
         val back = TileSettingsCodec.decode(TileSettingsCodec.encode(s))

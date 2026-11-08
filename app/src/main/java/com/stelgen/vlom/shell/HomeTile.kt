@@ -8,6 +8,7 @@ package com.stelgen.vlom.shell
  *            или назначенным приложением.
  * appTile  — любой установленный APK, добавленный пользователем (T3);
  *            autoicon из PackageManager, ручная замена иконки/имени — v2 (кастом).
+ * webTile  — произвольный сайт (S3.3/B1): открывается встроенным браузером (WebActivity).
  */
 data class HomeTile(
     val id: String,
@@ -16,8 +17,10 @@ data class HomeTile(
     val packageName: String? = null, // для appTile: целевой APK
     val activityName: String? = null,
     val hidden: Boolean = false,
+    val webUrl: String? = null,      // для webTile: адрес сайта
 ) {
-    val isLaunchable: Boolean get() = packageName != null
+    val isAppTile: Boolean get() = packageName != null
+    val isWebTile: Boolean get() = webUrl != null
 }
 
 /** Встроенные тайтлы старт-скрина (порядок = оригинальный Vista MCE). */
@@ -27,12 +30,14 @@ object BuiltInTiles {
     const val VIDEO = "builtin.video"
     const val SETTINGS = "builtin.settings"
     const val FRIGATE = "builtin.frigate"
+    const val WEATHER = "builtin.weather"
 
     val defaults = listOf(
         HomeTile(MUSIC, "Музыка", builtIn = true),
         HomeTile(PICTURES, "Картинки", builtIn = true),
         HomeTile(VIDEO, "Видео", builtIn = true),
         HomeTile(FRIGATE, "Наблюдение", builtIn = true),
+        HomeTile(WEATHER, "Погода", builtIn = true),
         HomeTile(SETTINGS, "Настройки", builtIn = true),
     )
 }

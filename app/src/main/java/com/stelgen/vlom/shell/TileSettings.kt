@@ -24,6 +24,12 @@ data class TileSettings(
         return copy(tiles = tiles + HomeTile(id, label, packageName = pkg, activityName = activity))
     }
 
+    /** S3.3: добавить сайт как тайтл (не дублировать по URL). */
+    fun addWebsite(id: String, label: String, url: String): TileSettings {
+        if (tiles.any { it.webUrl == url }) return this
+        return copy(tiles = tiles + HomeTile(id, label, webUrl = url))
+    }
+
     /** T5: скрыть/показать. */
     fun setHidden(id: String, hidden: Boolean): TileSettings =
         copy(tiles = tiles.map { if (it.id == id) it.copy(hidden = hidden) else it })
@@ -62,6 +68,7 @@ object TileSettingsCodec {
                     put("builtIn", t.builtIn)
                     t.packageName?.let { put("pkg", it) }
                     t.activityName?.let { put("act", it) }
+                    t.webUrl?.let { put("web", it) }
                     if (t.hidden) put("hidden", true)
                 })
             }
@@ -85,6 +92,7 @@ object TileSettingsCodec {
                 builtIn = o.optBoolean("builtIn", false),
                 packageName = o.optStringOrNull("pkg"),
                 activityName = o.optStringOrNull("act"),
+                webUrl = o.optStringOrNull("web"),
                 hidden = o.optBoolean("hidden", false),
             )
         }
