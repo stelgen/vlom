@@ -15,6 +15,8 @@ import com.stelgen.vlom.mcml.render.DesignScale
 import com.stelgen.vlom.shell.AppRepository
 import com.stelgen.vlom.shell.HomeLayout
 import com.stelgen.vlom.shell.HomeTile
+import com.stelgen.vlom.shell.SkinBitmaps
+import com.stelgen.vlom.shell.SkinCatalog
 import com.stelgen.vlom.shell.ThemeManager
 import com.stelgen.vlom.shell.TileIconProvider
 import com.stelgen.vlom.shell.TileSettings
@@ -44,7 +46,7 @@ class HomeView(
     private var hasEntryLayer = false
     private var entryLayerId = 0
     private val icons = TileIconProvider(context)
-
+    private val skins = SkinBitmaps(context)
     private val scale = DesignScale()
     private val palette = ThemeManager.palette(context)
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
@@ -138,6 +140,11 @@ class HomeView(
         )
         canvas.drawRect(0f, 0f, w.toFloat(), h.toFloat(), paint)
         paint.shader = null
+        // S4.1: оригинальный фон ehres (COMMON.BACKGROUND) поверх палитры
+        skins.get(SkinCatalog.homeBackground)?.let { bg ->
+            val dest = android.graphics.RectF(0f, 0f, w.toFloat(), h.toFloat())
+            canvas.drawBitmap(bg, null, dest, paint)
+        }
 
         canvas.save()
 
@@ -182,46 +189,75 @@ class HomeView(
 
     private fun drawTile(canvas: Canvas, tile: HomeTile, p: HomeLayout.Placement, focused: Boolean) {
         val rect = RectF(p.x, p.y, p.x + p.width, p.y + p.height)
-        // фон тайла (стоп-кадр темы; скин из PNG — фаза 4)
-        paint.style = Paint.Style.FILL
-        paint.color = when {
-            focused -> palette.accentFocus
-            tile.builtIn -> palette.accent
-            else -> palette.accentOther
-        }
-        paint.alpha = if (focused) 235 else 170
-        canvas.drawRoundRect(rect, 10f, 10f, paint)
+        val skin = SkinCatalog.forTile(tile)
 
         if (focused) {
+            // S4.1: большой стеклянный тайл фокуса — оригинальный PNG (аспект 1:1 с ячейкой)
+            val focusBmp = skin?.focus?.let { skins.get(it) }
+                ?: skins.get(SkinCatalog.focusBackground)
+            if (focusBmp != null) {
+                canvas.drawBitmap(focusBmp, null, rect, paint)
+
+                if (!tile.builtIn) {
+                    // app/web-тайтл: иконка APK по центру + русская подпись
+                    icons.iconFor(tile)?.let { d ->
+                        val size = 96f
+                        d.setBounds(
+                            (rect.centerX() - size / 2f).toInt(),
+                            (rect.centerY() - size / 2f).toInt(),
+                            (rect.centerX() + size / 2f).toInt(),
+                            (rect.centerY() + size / 2f).toInt(),
+                        )
+                        d.draw(canvas)
+                    }
+                    drawLabel(canvas, tile.label, rect.centerX(), rect.bottom - 34f, 26f)
+                }
+                return
+            }
+            // fallback: цветная палитра + рамка
+            paint.style = Paint.Style.FILL
+            paint.color = palette.accentFocus
+            paint.alpha = 235
+            canvas.drawRoundRect(rect, 10f, 10f, paint)
             paint.style = Paint.Style.STROKE
             paint.strokeWidth = 4f
             paint.color = 0xFFFFFFFF.toInt()
-            paint.alpha = 255
             canvas.drawRoundRect(rect, 10f, 10f, paint)
-            paint.style = Paint.Style.FILL
+            drawLabel(canvas, tile.label, rect.centerX(), rect.centerY(), 30f)
+            return
         }
 
-        // подпись тайтла (P6: русский, Selawik)
+        // не-фокус: маленькая иконка NOFOCUS (builtIn) или APK-иконка
+        val iconBmp = skin?.nofocus?.let { skins.get(it) }
+        if (iconBmp != null) {
+            canvas.drawBitmap(iconBmp, null, rect, paint)
+        } else {
+            paint.style = Paint.Style.FILL
+            paint.color = palette.accent
+            paint.alpha = 170
+            canvas.drawRoundRect(rect, 10f, 10f, paint)
+            paint.alpha = 255
+            icons.iconFor(tile)?.let { d ->
+                val size = p.height * 0.45f
+                d.setBounds(
+                    (rect.centerX() - size / 2f).toInt(),
+                    (rect.centerY() - size / 2f).toInt(),
+                    (rect.centerX() + size / 2f).toInt(),
+                    (rect.centerY() + size / 2f).toInt(),
+                )
+                d.draw(canvas)
+            }
+            drawLabel(canvas, tile.label, rect.centerX(), rect.bottom - 30f, 24f)
+        }
+    }
+
+    private fun drawLabel(canvas: Canvas, text: String, cx: Float, cy: Float, size: Float) {
         paint.color = palette.text
         paint.alpha = 255
         paint.typeface = font
-        paint.textSize = if (focused) 30f else 26f
+        paint.textSize = size
         paint.textAlign = Paint.Align.CENTER
-        val cy = p.y + p.height - 26f
-        canvas.drawText(tile.label, rect.centerX(), cy, paint)
-
-        // автоиконка (S2.2): APK-иконка или оригинальный PNG темы для builtIn
-        icons.iconFor(tile)?.let { drawable ->
-            val size = if (focused) 110f else 92f
-            val cx = rect.centerX()
-            val top = p.y + (p.height - size) / 2f - 22f
-            drawable.setBounds(
-                (cx - size / 2f).toInt(), top.toInt(),
-                (cx + size / 2f).toInt(), (top + size).toInt(),
-            )
-            drawable.alpha = if (tile.hidden) 150 else 255
-            drawable.draw(canvas)
-        }
+        canvas.drawText(text, cx, cy, paint)
     }
 
     companion object {

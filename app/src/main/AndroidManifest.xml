@@ -45,6 +45,11 @@
             android:screenOrientation="landscape" />
 
         <activity
+            android:name=".ui.RecoveryActivity"
+            android:exported="false"
+            android:screenOrientation="landscape" />
+
+        <activity
             android:name=".ui.WeatherActivity"
             android:exported="false"
             android:screenOrientation="landscape" />

@@ -17,6 +17,6 @@ class VersionTest {
 
     @Test
     fun `version starts at phase 0 baseline`() {
-        assertEquals("0.1.0", Version.current)
+        assertEquals("0.2.0", Version.current)
     }
 }

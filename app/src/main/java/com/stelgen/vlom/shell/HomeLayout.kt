@@ -17,8 +17,9 @@ object HomeLayout {
     const val BASIS_H = DesignScale.DEFAULT_BASIS_HEIGHT
 
     /** Параметры полосы (стоп-кадр Vista; скринтюнинг фазы 4). */
-    const val TILE_W = 340f
-    const val TILE_H = 230f
+    // Аспект = 258x145 (QUICKLINK.FOCUS) — фокусный PNG ложится в ячейку 1:1
+    const val TILE_W = 420f
+    const val TILE_H = 236f
     const val GAP = 24f
     const val STRIPE_TOP = 260f
     const val FOCUS_SCALE = 1.18f

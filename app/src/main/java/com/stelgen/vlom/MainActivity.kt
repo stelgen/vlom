@@ -3,42 +3,64 @@ package com.stelgen.vlom
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.os.SystemClock
+import android.os.StrictMode
 import com.stelgen.vlom.shell.AppRepository
 import com.stelgen.vlom.shell.BuiltInTiles
+import com.stelgen.vlom.shell.CrashGuard
+import com.stelgen.vlom.shell.CrashGuardInstaller
 import com.stelgen.vlom.shell.SharedPreferencesTileStore
 import com.stelgen.vlom.shell.TileRepository
 import com.stelgen.vlom.shell.TileSettings
 import com.stelgen.vlom.ui.FrigateActivity
 import com.stelgen.vlom.ui.HomeView
+import com.stelgen.vlom.ui.RecoveryActivity
 import com.stelgen.vlom.ui.SettingsActivity
 import com.stelgen.vlom.ui.WeatherActivity
 
 /**
- * S2.1: старт-скрин / home-сетка Vista MCE.
- * Тайтлы: SharedPreferences (S2.2) с автомержем PackageManager (prune удалённых,
- * восстановление builtIn). Настройки — SettingsActivity (S2.4), приложения —
- * AppRepository (S2.3). Обновление сетки после возврата из настроек.
+ * Старт-скрин / home-сетка Vista MCE (S2.1).
+ *
+ * S5.2: CrashGuard — счётчик падений; 2+ подряд -> RecoveryActivity
+ * (запуск стокового лаунчера / сброс настроек), пользователь не заперт.
+ * S5.1: замер холодного старта (attach -> первый кадр home) в логкат.
  */
 class MainActivity : Activity() {
 
+    private var createdAtMs = 0L
     private var lastSettingsJson: String? = null
+    private var healthyMarked = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        if (BuildConfig.DEBUG) {
+            StrictMode.setThreadPolicy(
+                StrictMode.ThreadPolicy.Builder().detectAll().penaltyLog().build()
+            )
+        }
         super.onCreate(savedInstanceState)
-        showHome()
+        createdAtMs = SystemClock.uptimeMillis()
+
+        CrashGuardInstaller.install(this)
+        val guard = CrashGuardInstaller.guard(this)
+        if (guard.isRecoveryMode()) {
+            startActivity(Intent(this, RecoveryActivity::class.java))
+            finish()
+            return
+        }
+        showHome(guard)
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_SETTINGS) showHome(CrashGuardInstaller.guard(this))
     }
 
     override fun onResume() {
         super.onResume()
         // вернулись из настроек/добавления приложения — перечитать, если менялось
         val current = TileSettingsCodecJson(loadSettings())
-        if (current != lastSettingsJson) showHome()
-    }
-
-    @Deprecated("Deprecated in Java")
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == REQUEST_SETTINGS) showHome()
+        if (current != lastSettingsJson) showHome(CrashGuardInstaller.guard(this))
     }
 
     private fun loadSettings(): TileSettings {
@@ -47,7 +69,7 @@ class MainActivity : Activity() {
         return TileRepository.load(store, installed)
     }
 
-    private fun showHome() {
+    private fun showHome(guard: CrashGuard) {
         val settings = loadSettings()
         lastSettingsJson = TileSettingsCodecJson(settings)
         setContentView(
@@ -66,6 +88,15 @@ class MainActivity : Activity() {
                 }
             }
         )
+        // успешный полноценный запуск: сброс счётчика сбоев + замер старта
+        if (!healthyMarked) {
+            guard.onHealthyHome()
+            healthyMarked = true
+            android.util.Log.i(
+                "StartupTimer",
+                "cold start (attach -> home shown): ${SystemClock.uptimeMillis() - createdAtMs} ms",
+            )
+        }
     }
 
     private fun TileSettingsCodecJson(s: TileSettings): String =
