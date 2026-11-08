@@ -7,12 +7,9 @@ name: Release screenshot
 # ⚠️ Release, созданный workflow'ом через GITHUB_TOKEN, НЕ триггерит release:published
 # (ограничение GitHub) — поэтому основной триггер: workflow_run от Release.
 
+# ⏸️ Автотриггеры отключены: эмулятор на GH-раннере нестабилен (отладка отложена).
+# Запуск вручную: Actions -> Release screenshot -> Run workflow (tag=vX.Y.Z).
 on:
-  release:
-    types: [published]
-  workflow_run:
-    workflows: [Release]
-    types: [completed]
   workflow_dispatch:
     inputs:
       tag:
