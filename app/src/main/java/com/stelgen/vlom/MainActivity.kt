@@ -2,22 +2,32 @@ package com.stelgen.vlom
 
 import android.app.Activity
 import android.os.Bundle
-import com.stelgen.vlom.ui.McmlView
+import com.stelgen.vlom.shell.BuiltInTiles
+import com.stelgen.vlom.shell.TileSettings
+import com.stelgen.vlom.ui.HomeView
 
 /**
- * Фаза 0 (S0.4): скелет HOME-приложения.
- * Фаза 1 (S1.2): старт-скрин рендерится MCML-движком из реальной страницы темы.
- * Fallback — Vista Blue-заглушка, если страница не распарсилась.
+ * S2.1: старт-скрин / home-сетка Vista MCE.
+ * Состав и порядок тайтлов — TileSettings (S2.2, SharedPreferences в след. шаге),
+ * запуск приложений — AppRepository (S2.3). Встроенные тайтлы (Музыка/Видео/
+ * Картинки/Наблюдение/Настройки) открывают внутренние экраны (фазы 2/3).
  */
 class MainActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(McmlView(this, DEMO_PAGE))
+        setContentView(HomeView(this, TileSettings()) { tile ->
+            when (tile.id) {
+                BuiltInTiles.SETTINGS -> openSettings()
+                // Музыка/Картинки/Видео/Наблюдение — внутренние экраны фаз 2/3:
+                // сейчас лог в логкат, UI-заглушки придут вместе с медиабраузером
+                else -> android.util.Log.i("MainActivity", "builtin tile: ${tile.id}")
+            }
+        })
     }
 
-    companion object {
-        // демо-страница фазы 1: простая, без сервис-бус-зависимостей
-        const val DEMO_PAGE = "type23_ASPECTPANEL.XML.mcml"
+    private fun openSettings() {
+        // S2.4: экран настроек v1 (добавление/скрытие/сортировка тайтлов)
+        android.util.Log.i("MainActivity", "settings: TODO фаза 2")
     }
 }
