@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<styles>
+
+    <style class="ColumnPanel.HomeMenu"
+        width="325"/>
+
+    <style class="Panel.Menu"
+        margin="Rect(36, 0, 0, 0)"
+        />
+        
+    <style class="Panel.ccCommand.Radio"
+        width="323" 
+        left="-18"
+        />
+
+    <style class="Button"
+        margin="Rect(8,0,8,0)"
+        width="269"
+        fontStyle="FS4"
+        />
+
+    <style class="Button.Photos.Rotate"
+        margin="Rect(8,0,0,0)"
+        />
+
+    <style class="MenuRadioButton.IconHolder"
+        width="24"
+        />
+
+    <style class="MenuRadioButton.Text"
+        fontStyle="FS4"
+        />
+
+    <style class="MenuRadioButton.Menu"
+        margin="Rect(8,0,0,0)"
+        width="269"
+        />
+
+    <style class="Panel.AudioCheckButtonText"
+        fontStyle="FS4"
+        />
+
+    <style class="Panel.Photos.Rotate.Text"
+        fontStyle="FS4"
+        />
+
+    <style class="Panel.Audio.NowPlayingButtonCheck"
+        padding="Rect(0,12,2,13)"
+        />
+
+    <style class="Panel.Video.InfoBarText.Channel.Callsign"
+        fontStyle="FS24"
+        />
+
+</styles>
+

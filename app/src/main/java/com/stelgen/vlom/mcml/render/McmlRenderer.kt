@@ -18,7 +18,14 @@ class McmlRenderer(
 ) {
 
     /** Палитра темы (заготовка; заменяется ресурсами ehres в фазе 4). */
-    data class Palette(val backgroundTop: Int, val backgroundBottom: Int, val text: Int) {
+    data class Palette(
+        val backgroundTop: Int,
+        val backgroundBottom: Int,
+        val text: Int,
+        val accent: Int = 0xFF2A5298.toInt(),
+        val accentFocus: Int = 0xFF5B8FD9.toInt(),
+        val accentOther: Int = 0xFF3A6BC4.toInt(),
+    ) {
         companion object {
             val VISTA_BLUE = Palette(0xFF0B3D91.toInt(), 0xFF06142E.toInt(), 0xFFFFFFFF.toInt())
             val VISTA_BLACK = Palette(0xFF101010.toInt(), 0xFF000000.toInt(), 0xFFEDEDED.toInt())

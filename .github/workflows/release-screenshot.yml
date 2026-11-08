@@ -48,6 +48,22 @@ jobs:
             adb exec-out screencap -p > vlom-screenshot.png
             adb logcat -d > vlom-logcat.txt
 
+      - name: Update README screenshot in repo
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p docs
+          cp vlom-screenshot.png docs/screenshot.png
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/screenshot.png
+          if git diff --cached --quiet; then
+            echo "screenshot unchanged"
+          else
+            git commit -m "docs: update home screenshot (release ${GITHUB_REF_NAME})"
+            git push origin HEAD:main
+          fi
+
       - name: Attach screenshot to release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

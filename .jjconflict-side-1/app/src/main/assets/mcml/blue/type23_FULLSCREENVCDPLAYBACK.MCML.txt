@@ -1,0 +1,1 @@
+<Mcml xmlns="http://schemas.microsoft.com/2006/mcml" xmlns:play="assembly://ehshell/Microsoft.MediaCenter.Playback" xmlns:fsvideo="res://ehres!FullScreenVideoPlayback.mcml" xmlns:me="Me"><CommandCode Name="DetailsCommandCode" CommandCode="Details" /><UI Name="FullScreenVcdPlayback" BaseUI="fsvideo:FullScreenVideoPlayback" Behavior="play:FullScreenVideoBehavior"></UI></Mcml>

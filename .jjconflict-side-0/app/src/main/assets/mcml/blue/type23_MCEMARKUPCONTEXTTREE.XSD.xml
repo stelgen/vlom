@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="MceMarkupContextTree" 
+           targetNamespace="http://schemas.microsoft.com/2007/MceMarkupContextTree" 
+           xmlns="http://schemas.microsoft.com/2007/MceMarkupContextTree" 
+           xmlns:mstns="http://schemas.microsoft.com/2007/MceMarkupContextTree" 
+           xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+           version="1.0" 
+           elementFormDefault="qualified" 
+           attributeFormDefault="unqualified">
+  <xs:element name="MarkupContextTree">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="Node" type="NodeType" minOccurs="1" maxOccurs="unbounded" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:complexType name="NodeType">
+    <xs:sequence>
+      <xs:element name="Node" type="NodeType" minOccurs="0" maxOccurs="unbounded">
+      </xs:element>
+      <xs:element name="SlideDeck" minOccurs="0" maxOccurs="1">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Slides" minOccurs="1" maxOccurs="1">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name="Add" minOccurs="0" maxOccurs="unbounded">
+                    <xs:complexType>
+                      <xs:sequence>
+                      </xs:sequence>
+                      <xs:attribute name="Title" type="xs:string" use="required" />
+                      <xs:attribute name="UIName" type="xs:string" use="required" />
+                      <xs:attribute name="StartDate" type="xs:dateTime" use="optional" />
+                      <xs:attribute name="EndDate" type="xs:dateTime" use="optional" />
+                    </xs:complexType>
+                  </xs:element>
+                  <xs:element name="Remove" minOccurs="0" maxOccurs="unbounded">
+                    <xs:complexType>
+                      <xs:sequence>
+                      </xs:sequence>
+                      <xs:attribute name="Name" type="xs:string" use="required" />
+                    </xs:complexType>
+                  </xs:element>
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+          <xs:attribute name="DefaultSlide" type="xs:string" use="required" />
+          <xs:attribute name="UIName" type="xs:string" use="required" />
+          <xs:attribute name="Base" type="xs:string" use="optional" />
+          <xs:attribute name="StartDate" type="xs:dateTime" use="optional" />
+          <xs:attribute name="EndDate" type="xs:dateTime" use="optional" />
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+    <xs:attribute name="Name" type="xs:string" use="required" />
+  </xs:complexType>
+</xs:schema>

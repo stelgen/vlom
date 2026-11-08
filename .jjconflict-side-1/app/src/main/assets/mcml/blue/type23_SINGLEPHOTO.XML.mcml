@@ -1,0 +1,1 @@
+<?xml version="1.0" encoding="UTF-8" ?><uidescription platform="Television" xmlns:dmr="http://schemas.microsoft.com/MediaCenter/ehshell/MediaCenter.DigitalMediaRenderer"><backgroundpage url="extensibility.background.xml"/><dmr:SinglePhotoPage IsWidescreenAware="true" UIName="res://ehres!SinglePhoto.mcml#SinglePhotoPage"/></uidescription>

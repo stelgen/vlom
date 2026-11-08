@@ -1,0 +1,1 @@
+<Mcml xmlns="http://schemas.microsoft.com/2006/mcml" xmlns:uif="assembly://ehshell/ServiceBus.UIFramework"><UI Name="PipContainerView"><Content><uif:PipHost Name="PipHost" Visible="false"/></Content></UI></Mcml>

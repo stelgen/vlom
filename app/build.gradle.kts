@@ -26,6 +26,9 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            // Персональный проект: release подписывается debug-ключом для установки
+            // по sideload. Прод-подпись (секреты CI) — при публичном релизе (v2 backlog).
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
 
