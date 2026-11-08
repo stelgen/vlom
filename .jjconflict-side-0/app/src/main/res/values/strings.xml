@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <!-- REQ-001 P6: UI только русский; строки русской локализации Vista MCE придут в фазе 2 -->
-    <string name="app_name">Vista (VLOM)</string>
-    <string name="settings_title">Настройки тайтлов</string>
-    <string name="settings_add_app">Добавить приложение</string>
-    <string name="settings_done">Готово</string>
-</resources>

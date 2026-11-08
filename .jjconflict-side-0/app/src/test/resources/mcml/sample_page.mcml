@@ -1,2 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<uidescription platform="Television" xmlns:sb="http://schemas.microsoft.com/MediaCenter/ehshell/ServiceBus.UIFramework"><sb:Panel class="Panel.ccArea" id="_test"><sb:Button class="Button" onClick="OnClick_Copy">#Acquire.Copy</sb:Button><sb:Panel class="Panel.ccDescription" padding="Rect(0,35,0,0)"/></sb:Panel></uidescription>
