@@ -59,7 +59,7 @@ jobs:
       - name: Emulator + screencap
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 28
+          api-level: 30
           target: android-tv
           arch: x86
           script: |
