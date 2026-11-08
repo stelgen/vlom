@@ -1,11 +1,23 @@
 name: Release screenshot
 
 # Отдельный шаг после каждого релиза (канон reverseray):
-# собрать APK → поднять Android TV 9 (API 28) эмулятор → поставить → запустить → скрин → приложить к Release.
+# собрать APK → поднять Android TV 9 (API 28) эмулятор → поставить → запустить → скрин → приложить к Release
+# и закоммитить в docs/screenshot.png (README подхватывает автоматически).
+#
+# ⚠️ Release, созданный workflow'ом через GITHUB_TOKEN, НЕ триггерит release:published
+# (известное ограничение GitHub) — поэтому основной триггер: workflow_run от Release.
 
 on:
   release:
     types: [published]
+  workflow_run:
+    workflows: [Release]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag (e.g. v0.1.0); empty = latest release'
+        required: false
 
 permissions:
   contents: write
@@ -14,11 +26,23 @@ jobs:
   screenshot:
     name: Screenshot on Android TV 9 emulator
     runs-on: ubuntu-latest
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     steps:
+      - name: Resolve release tag
+        id: tag
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ github.event.release.tag_name }}"
+          [ -n "$TAG" ] || TAG="${{ github.event.workflow_run.head_branch }}"
+          [ -n "$TAG" ] || TAG="${{ github.event.inputs.tag }}"
+          case "$TAG" in v*) ;; *) TAG=$(gh api repos/${{ github.repository }}/releases/latest -q .tag_name);; esac
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
       - name: Checkout release tag
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.release.tag_name }}
+          ref: ${{ steps.tag.outputs.tag }}
 
       - name: JDK 17
         uses: actions/setup-java@v4
@@ -68,7 +92,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release upload "${{ github.event.release.tag_name }}" \
+          gh release upload "${{ steps.tag.outputs.tag }}" \
             vlom-screenshot.png vlom-logcat.txt --clobber
 
       - name: Upload artifact
