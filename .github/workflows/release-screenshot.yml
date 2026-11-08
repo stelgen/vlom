@@ -1,11 +1,11 @@
 name: Release screenshot
 
-# Отдельный шаг после каждого релиза (канон reverseray):
-# собрать APK → поднять Android TV 9 (API 28) эмулятор → поставить → запустить → скрин → приложить к Release
-# и закоммитить в docs/screenshot.png (README подхватывает автоматически).
+# После каждого релиза: собрать APK → эмулятор Android TV 9 (API 28) → установить →
+# запустить → серия скриншотов → приложить к Release и закоммитить в docs/screenshot.png
+# (README подхватывает автоматически).
 #
 # ⚠️ Release, созданный workflow'ом через GITHUB_TOKEN, НЕ триггерит release:published
-# (известное ограничение GitHub) — поэтому основной триггер: workflow_run от Release.
+# (ограничение GitHub) — поэтому основной триггер: workflow_run от Release.
 
 on:
   release:
@@ -64,13 +64,49 @@ jobs:
           arch: x86
           script: |
             adb wait-for-device
+            adb shell 'while [ "$(getprop sys.boot_completed)" != "1" ]; do sleep 2; done'
+            # экран: никогда не спит
+            adb shell svc power stayon true
+            adb shell settings put system screen_off_timeout 600000
+            adb shell settings put global stay_on_while_plugged_in 7
+            adb shell input keyevent KEYCODE_WAKEUP
             adb install -r app/build/outputs/apk/debug/*.apk
-            # назначить VLOM HOME и запустить старт-скрин
             adb shell cmd package set-home-activity com.stelgen.vlom/.MainActivity || true
-            adb shell am start -n com.stelgen.vlom/.MainActivity
-            sleep 5
-            adb exec-out screencap -p > vlom-screenshot.png
+            adb shell am start -W -n com.stelgen.vlom/.MainActivity || true
+            # дождаться resumed-активности
+            for i in $(seq 1 20); do
+              R=$(adb shell dumpsys activity activities 2>/dev/null | grep -c 'com.stelgen.vlom/.MainActivity') || true
+              [ "$R" -gt 0 ] && break
+              sleep 2
+            done
+            adb shell settings put global window_animation_scale 0
+            adb shell settings put global transition_animation_scale 0
+            adb shell settings put global animator_duration_scale 0
+            sleep 6
+            # будим прямо перед съёмкой + «нажатие» для интерактива
+            adb shell input keyevent KEYCODE_WAKEUP
+            adb shell input keyevent KEYCODE_DPAD_CENTER || true
+            sleep 3
+            echo "=== POWER ==="; adb shell dumpsys power | grep -E 'mWakefulness|mHoldingDisplay|Display Power' || true
+            echo "=== FOCUS ==="; adb shell dumpsys window | grep -E 'mCurrentFocus|mFocusedApp' || true
+            for i in 1 2 3 4; do
+              adb exec-out screencap -p > shot$i.png
+              sleep 3
+              adb shell input keyevent KEYCODE_DPAD_RIGHT || true
+            done
+            python3 - <<'PY'
+            import os, shutil
+            shots = [(os.path.getsize(f"shot{i}.png"), f"shot{i}.png") for i in (1,2,3,4)]
+            shots.sort(reverse=True)
+            size, best = shots[0]
+            print(f"shot sizes: {shots}; chosen {best}")
+            shutil.copy(best, "vlom-screenshot.png")
+            if size < 30000:
+                print("WARNING: suspiciously small PNG (likely solid/black frame)")
+            PY
             adb logcat -d > vlom-logcat.txt
+            adb shell dumpsys window > vlom-dumpsys-window.txt || true
+            adb shell dumpsys power > vlom-dumpsys-power.txt || true
 
       - name: Update README screenshot in repo
         env:
@@ -84,7 +120,7 @@ jobs:
           if git diff --cached --quiet; then
             echo "screenshot unchanged"
           else
-            git commit -m "docs: update home screenshot (release ${GITHUB_REF_NAME})"
+            git commit -m "docs: update home screenshot (release ${{ steps.tag.outputs.tag }})"
             git push origin HEAD:main
           fi
 
@@ -93,7 +129,8 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release upload "${{ steps.tag.outputs.tag }}" \
-            vlom-screenshot.png vlom-logcat.txt --clobber
+            vlom-screenshot.png vlom-logcat.txt \
+            vlom-dumpsys-window.txt vlom-dumpsys-power.txt --clobber
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -103,3 +140,5 @@ jobs:
           path: |
             vlom-screenshot.png
             vlom-logcat.txt
+            vlom-dumpsys-window.txt
+            vlom-dumpsys-power.txt
