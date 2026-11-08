@@ -63,50 +63,35 @@ jobs:
           target: android-tv
           arch: x86
           script: |
-            adb wait-for-device
-            adb shell 'while [ "$(getprop sys.boot_completed)" != "1" ]; do sleep 2; done'
-            # экран: никогда не спит
-            adb shell svc power stayon true
-            adb shell settings put system screen_off_timeout 600000
-            adb shell settings put global stay_on_while_plugged_in 7
-            adb shell input keyevent KEYCODE_WAKEUP
-            adb install -r app/build/outputs/apk/debug/*.apk
+            adb install -r app/build/outputs/apk/debug/*.apk || true
+            adb shell svc power stayon true || true
+            adb shell settings put system screen_off_timeout 600000 || true
+            adb shell input keyevent KEYCODE_WAKEUP || true
             adb shell cmd package set-home-activity com.stelgen.vlom/.MainActivity || true
             adb shell am start -W -n com.stelgen.vlom/.MainActivity || true
-            # дождаться resumed-активности
-            for i in $(seq 1 20); do
-              R=$(adb shell dumpsys activity activities 2>/dev/null | grep -c 'com.stelgen.vlom/.MainActivity') || true
-              if [ "$R" -gt 0 ]; then break; fi
-              sleep 2
-            done
-            adb shell settings put global window_animation_scale 0
-            adb shell settings put global transition_animation_scale 0
-            adb shell settings put global animator_duration_scale 0
-            sleep 6
-            # будим прямо перед съёмкой + «нажатие» для интерактива
-            adb shell input keyevent KEYCODE_WAKEUP
-            adb shell input keyevent KEYCODE_DPAD_CENTER || true
-            sleep 3
-            echo "=== POWER ==="; adb shell dumpsys power | grep -E 'mWakefulness|mHoldingDisplay|Display Power' || true
-            echo "=== FOCUS ==="; adb shell dumpsys window | grep -E 'mCurrentFocus|mFocusedApp' || true
+            sleep 12
             for i in 1 2 3 4; do
-              adb exec-out screencap -p > shot$i.png
+              adb exec-out screencap -p > shot$i.png || true
               sleep 3
               adb shell input keyevent KEYCODE_DPAD_RIGHT || true
             done
-            python3 - <<'PY'
-            import os, shutil
-            shots = [(os.path.getsize(f"shot{i}.png"), f"shot{i}.png") for i in (1,2,3,4)]
-            shots.sort(reverse=True)
-            size, best = shots[0]
-            print(f"shot sizes: {shots}; chosen {best}")
-            shutil.copy(best, "vlom-screenshot.png")
-            if size < 30000:
-                print("WARNING: suspiciously small PNG (likely solid/black frame)")
-            PY
-            adb logcat -d > vlom-logcat.txt
+            adb logcat -d > vlom-logcat.txt || true
             adb shell dumpsys window > vlom-dumpsys-window.txt || true
             adb shell dumpsys power > vlom-dumpsys-power.txt || true
+            true
+
+      - name: Pick best shot
+        run: |
+          python3 -c "
+          import os, shutil
+          shots = [(os.path.getsize(f'shot{i}.png'), f'shot{i}.png') for i in (1,2,3,4) if os.path.exists(f'shot{i}.png')]
+          shots.sort(reverse=True)
+          size, best = shots[0]
+          print(f'shot sizes: {shots}; chosen {best}')
+          shutil.copy(best, 'vlom-screenshot.png')
+          if size < 30000:
+              print('WARNING: suspiciously small PNG (likely solid/black frame)')
+          "
 
       - name: Update README screenshot in repo
         env:
@@ -140,5 +125,7 @@ jobs:
           path: |
             vlom-screenshot.png
             vlom-logcat.txt
+            vlom-dumpsys-window.txt
+            vlom-dumpsys-power.txt
             vlom-dumpsys-window.txt
             vlom-dumpsys-power.txt
